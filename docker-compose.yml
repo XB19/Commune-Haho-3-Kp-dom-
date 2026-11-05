@@ -1,0 +1,40 @@
+# Déploiement complet : PostgreSQL + portail (site et administration).
+#   1. Copiez .env.example en .env et remplissez-le (mot de passe PostgreSQL, JWT_SECRET, compte admin).
+#   2. docker compose up -d --build
+#   3. Site : http://localhost:4000 · Administration : http://localhost:4000/admin
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${PGUSER:-postgres}
+      POSTGRES_PASSWORD: ${PGPASSWORD:?Renseignez PGPASSWORD dans .env}
+      POSTGRES_DB: ${PGDATABASE:-haho3}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+      NODE_ENV: production
+    ports:
+      - "${APP_PORT:-4000}:4000"
+    volumes:
+      - uploads:/app/uploads
+
+volumes:
+  db-data:
+  uploads:

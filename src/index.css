@@ -1,0 +1,208 @@
+@import "tailwindcss";
+
+@theme {
+  /* Identité togolaise */
+  --color-togo-green: #006a4e;
+  --color-togo-red: #d21034;
+  --color-togo-yellow: #ffce00;
+  --color-earth: #8b4513;
+
+  /* Palette institutionnelle (refonte) */
+  --color-gold: #836936;
+  --color-gold-dark: #6a5428;
+  --color-gold-light: #b39a62;
+  --color-bronze: #885801;
+  --color-crimson: #900404;
+  --color-ink: #212226;
+  --color-char: #424242;
+  --color-body: #565969;
+  --color-mist: #f2f3f5;
+  --color-line: #e8e8e9;
+
+  --font-sans: "Roboto", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-body);
+  background: #ffffff;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+}
+
+@keyframes hero-zoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+
+.animate-hero-zoom {
+  animation: hero-zoom 9s ease-out forwards;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.8s cubic-bezier(0.165, 0.84, 0.44, 1) both;
+}
+
+@keyframes fade-right {
+  from {
+    opacity: 0;
+    transform: translateX(-40px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-fade-right {
+  animation: fade-right 1s cubic-bezier(0.165, 0.84, 0.44, 1) both;
+}
+
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.animate-grow-x {
+  transform-origin: left;
+  animation: grow-x 0.9s cubic-bezier(0.165, 0.84, 0.44, 1) both;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes bounce-down {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(8px);
+    opacity: 0.5;
+  }
+}
+
+.animate-bounce-down {
+  animation: bounce-down 1.8s ease-in-out infinite;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-page-in {
+  /* « backwards » : aucun effet une fois terminée (évite un contexte d'empilement sous l'en-tête). */
+  animation: page-in 0.5s ease-out backwards;
+}
+
+/* ---------- Apparition au défilement ---------- */
+[data-reveal] {
+  opacity: 0;
+  transition:
+    opacity 0.9s cubic-bezier(0.165, 0.84, 0.44, 1),
+    transform 0.9s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+[data-reveal="up"] {
+  transform: translateY(40px);
+}
+[data-reveal="down"] {
+  transform: translateY(-30px);
+}
+[data-reveal="left"] {
+  transform: translateX(-50px);
+}
+[data-reveal="right"] {
+  transform: translateX(50px);
+}
+[data-reveal="zoom"] {
+  transform: scale(0.92);
+}
+
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Trait doré sous les titres de section */
+[data-reveal] .title-bar,
+.title-bar[data-reveal] {
+  transform-origin: left;
+}
+.title-bar {
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: transform 0.9s cubic-bezier(0.165, 0.84, 0.44, 1) 0.3s;
+}
+.title-bar.mx-auto {
+  transform-origin: center;
+}
+.is-visible .title-bar,
+.title-bar.is-visible {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  [data-reveal],
+  .title-bar {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
