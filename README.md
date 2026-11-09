@@ -1,15 +1,37 @@
 # Commune Haho 3 – Kpédomé
 
-Portail de la commune : site public en React (Vite, Tailwind CSS v4, React Router) et administration
-complète, avec une API Node.js (Express) et une base PostgreSQL.
+Portail de la commune, en deux parties :
+
+| Dossier      | Contenu | Technologies |
+|--------------|---------|--------------|
+| `frontend/`  | Site public : accueil, la commune, démarches, vie locale, projets, actualités, contact | React, Vite, Tailwind CSS v4 |
+| `backend/`   | API, base de données et **tableau de bord d'administration** (`/admin`) | Node.js, Express, PostgreSQL ; tableau de bord en React + Vite |
+
+```
+.
+├── .env                  configuration locale (non partagée)
+├── .env.example          modèle de configuration
+├── docker-compose.yml    déploiement : PostgreSQL + backend + frontend
+├── package.json          commandes communes (dev, build, db:init)
+├── frontend/
+│   ├── src/              pages, composants, styles du site public
+│   ├── nginx.conf        serveur web du site en production (Docker)
+│   └── Dockerfile
+└── backend/
+    ├── server/           API : index.js (routes), db.js, init.js (création de la base)
+    ├── content/          contenu initial du site (defaults.js)
+    ├── admin/            tableau de bord d'administration (React)
+    ├── uploads/          fichiers envoyés depuis la médiathèque (créé automatiquement)
+    └── Dockerfile
+```
 
 ## Installation (une seule fois)
 
-1. Installez les dépendances :
+1. Installez les dépendances des trois `package.json` :
    ```bash
-   npm install
+   npm run install:all
    ```
-2. Copiez `.env.example` en `.env`, puis renseignez :
+2. Copiez `.env.example` en `.env` (à la racine), puis renseignez :
    - le mot de passe PostgreSQL (`PGPASSWORD`) ;
    - une longue chaîne aléatoire (`JWT_SECRET`) ;
    - le premier compte administrateur (`ADMIN_EMAIL`, `ADMIN_PASSWORD`).
@@ -21,27 +43,37 @@ complète, avec une API Node.js (Express) et une base PostgreSQL.
    ```
    Vous pouvez relancer cette commande sans risque : elle ne remplace rien de ce qui existe déjà.
 
-## Lancer en développement
+## Développement
 
 ```bash
-npm run dev      # site : http://localhost:5173 · API : http://localhost:4000
+npm run dev
 ```
 
-Cette commande démarre à la fois le site (Vite) et l'API. Vite transmet `/api` et `/uploads` à l'API.
+Cette commande lance trois serveurs :
 
-## Administration : `/admin`
+| Adresse                       | Rôle |
+|-------------------------------|------|
+| http://localhost:5173         | Site public (frontend) |
+| http://localhost:5173/admin   | Tableau de bord (Vite le transmet au backend) |
+| http://localhost:4000         | API (backend) |
 
-On y accède par le lien « Espace mairie » du pied de page. L'administration est séparée du site public.
+Chaque partie peut aussi être lancée seule :
+- `npm run dev --prefix frontend` pour le site ;
+- `npm run dev --prefix backend` pour l'API et le tableau de bord, accessible sur http://localhost:5174/admin.
 
-| Rubrique               | Rôle |
-|------------------------|------|
-| Tableau de bord        | Chiffres clés, derniers messages, dernières actualités, activité de l'équipe |
-| Actualités             | Créer, modifier, publier ou dépublier, mettre à la une, ajouter une galerie photo et vidéo |
-| Messages               | Messages du formulaire de contact : lire, répondre, archiver, supprimer |
-| Médiathèque            | Envoyer des images, vidéos et PDF (50 Mo maximum par fichier) |
-| Pages du site          | Tous les textes et images : informations générales, Maire, Accueil (diaporama, chiffres, agenda, galerie, liens), Commune (conseil municipal…), Démarches, Vie locale, Projets, Contact |
-| Utilisateurs           | Comptes de l'équipe (réservé aux administrateurs) |
-| Mon compte             | Changer son mot de passe |
+## Tableau de bord : `/admin`
+
+On y accède par le lien « Espace mairie » du pied de page.
+
+| Rubrique         | Rôle |
+|------------------|------|
+| Tableau de bord  | Chiffres clés, derniers messages, dernières actualités, activité de l'équipe |
+| Actualités       | Créer, modifier, publier ou dépublier, mettre à la une, ajouter une galerie photo et vidéo |
+| Messages         | Messages du formulaire de contact : lire, répondre, archiver, supprimer |
+| Médiathèque      | Envoyer des images, vidéos et PDF (50 Mo maximum par fichier) |
+| Pages du site    | Tous les textes et images du site, page par page |
+| Utilisateurs     | Comptes de l'équipe (réservé aux administrateurs) |
+| Mon compte       | Changer son mot de passe |
 
 Il existe deux rôles :
 - **administrateur** : accès à tout ;
@@ -56,6 +88,9 @@ Sécurité :
 - le formulaire de contact est protégé contre les robots ;
 - seuls certains types de fichiers peuvent être envoyés.
 
+Pour rendre un nouveau champ modifiable, ajoutez-le dans `backend/admin/src/schemas.js`, puis affichez-le dans la page
+correspondante de `frontend/src/pages/`.
+
 ## Base de données (PostgreSQL)
 
 | Table          | Contenu |
@@ -63,22 +98,9 @@ Sécurité :
 | `contenus`     | Textes et images de chaque section du site (JSON), une ligne par section |
 | `actualites`   | Articles |
 | `messages`     | Messages reçus par le formulaire de contact |
-| `medias`       | Fichiers envoyés (stockés dans le dossier `uploads/`) |
+| `medias`       | Fichiers envoyés (stockés dans `backend/uploads/`) |
 | `utilisateurs` | Comptes de l'administration |
 | `journal`      | Historique des actions de l'équipe |
-
-Le contenu d'origine se trouve dans `src/content/defaults.js`. Il sert aussi de secours si l'API ne répond pas.
-
-## Code
-
-| Dossier / fichier         | Rôle |
-|---------------------------|------|
-| `server/index.js`         | API (authentification, contenus, actualités, messages, médias, comptes) |
-| `server/init.js`          | Création de la base et des données initiales |
-| `src/pages/`              | Pages du site public |
-| `src/admin/`              | Administration |
-| `src/admin/schemas.js`    | Champs modifiables de chaque section : ajoutez-y un champ pour le rendre éditable |
-| `src/lib/content.jsx`     | Chargement du contenu du site depuis l'API |
 
 ## Déploiement avec Docker
 
@@ -89,28 +111,30 @@ cp .env.example .env        # puis remplissez PGPASSWORD, JWT_SECRET, ADMIN_EMAI
 docker compose up -d --build
 ```
 
-- Site : http://localhost:4000. Administration : http://localhost:4000/admin
-- Au premier démarrage, le conteneur crée les tables, le contenu initial et le compte administrateur.
-- Les données sont conservées dans deux volumes Docker :
-  - `db-data` pour la base PostgreSQL ;
-  - `uploads` pour les fichiers de la médiathèque.
-- Pour changer le port publié, réglez `APP_PORT` dans `.env`.
-- En HTTPS (derrière Nginx, Caddy, Traefik…), mettez `COOKIE_SECURE=true` dans `.env`.
+| Conteneur  | Rôle |
+|------------|------|
+| `db`       | PostgreSQL 17 (volume `db-data`) |
+| `backend`  | API et tableau de bord. Au premier démarrage, crée les tables, le contenu initial et le compte administrateur (volume `uploads`) |
+| `frontend` | Nginx : sert le site public et transmet `/api`, `/uploads` et `/admin` au backend |
+
+- Site : http://localhost:8080. Administration : http://localhost:8080/admin
+- Pour changer le port, réglez `APP_PORT` dans `.env`.
+- En HTTPS (derrière un proxy ou un hébergeur), mettez `COOKIE_SECURE=true` dans `.env`.
 
 Commandes utiles :
 
 ```bash
-docker compose logs -f app                                             # journaux de l'application
+docker compose logs -f backend                                         # journaux de l'API
 docker compose exec db pg_dump -U postgres haho3 > sauvegarde.sql      # sauvegarde de la base
 docker compose down                                                    # arrêt (les données sont conservées)
 ```
 
-## Mise en production
+## Déploiement sans Docker (un seul serveur)
 
 ```bash
-npm run build                          # compile le site dans dist/
-npm start                              # l'API sert aussi le site compilé (port PORT, 4000 par défaut)
+npm run build     # compile le tableau de bord (backend/dist) et le site (frontend/dist)
+npm start         # le backend sert l'API, /admin et le site public (port 4000)
 ```
 
-Placez un serveur HTTPS (Nginx, Caddy…) devant le port de l'API et mettez `COOKIE_SECURE=true`.
-Sauvegardez régulièrement la base PostgreSQL et le dossier `uploads/`.
+Placez un serveur HTTPS (Nginx, Caddy…) devant le port 4000 et mettez `COOKIE_SECURE=true`.
+Sauvegardez régulièrement la base PostgreSQL et le dossier `backend/uploads/`.

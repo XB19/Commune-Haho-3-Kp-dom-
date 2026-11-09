@@ -1,7 +1,7 @@
-# Déploiement complet : PostgreSQL + portail (site et administration).
+# Déploiement complet : PostgreSQL + backend (API et administration) + frontend (site public, Nginx).
 #   1. Copiez .env.example en .env et remplissez-le (mot de passe PostgreSQL, JWT_SECRET, compte admin).
 #   2. docker compose up -d --build
-#   3. Site : http://localhost:4000 · Administration : http://localhost:4000/admin
+#   3. Site : http://localhost:8080 · Administration : http://localhost:8080/admin
 
 services:
   db:
@@ -19,8 +19,8 @@ services:
       timeout: 5s
       retries: 20
 
-  app:
-    build: .
+  backend:
+    build: ./backend
     restart: unless-stopped
     depends_on:
       db:
@@ -30,10 +30,16 @@ services:
       PGHOST: db
       PGPORT: 5432
       NODE_ENV: production
-    ports:
-      - "${APP_PORT:-4000}:4000"
     volumes:
       - uploads:/app/uploads
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${APP_PORT:-8080}:80"
 
 volumes:
   db-data:

@@ -1,33 +1,16 @@
 {
-  "name": "commune-haho-3",
+  "name": "commune-haho3",
   "private": true,
   "version": "1.0.0",
-  "type": "module",
+  "description": "Portail de la Commune Haho 3 – Kpédomé : frontend (site public) + backend (API PostgreSQL et administration)",
   "scripts": {
-    "dev": "concurrently -k -n api,site -c yellow,cyan \"npm:dev:api\" \"npm:dev:site\"",
-    "dev:site": "vite",
-    "dev:api": "node --env-file-if-exists=.env --watch-path=server server/index.js",
-    "db:init": "node --env-file-if-exists=.env server/init.js",
-    "build": "vite build",
-    "start": "node --env-file-if-exists=.env server/index.js",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "bcryptjs": "^3.0.3",
-    "cookie-parser": "^1.4.7",
-    "express": "^4.22.3",
-    "jsonwebtoken": "^9.0.3",
-    "multer": "^2.5.0",
-    "pg": "^8.23.1",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-router-dom": "^7.6.0"
+    "install:all": "npm install && npm install --prefix backend && npm install --prefix frontend",
+    "dev": "concurrently -k -n api,admin,site -c yellow,magenta,cyan \"npm run dev:api --prefix backend\" \"npm run dev:admin --prefix backend\" \"npm run dev --prefix frontend\"",
+    "db:init": "npm run db:init --prefix backend",
+    "build": "npm run build --prefix backend && npm run build --prefix frontend",
+    "start": "npm start --prefix backend"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.7",
-    "@vitejs/plugin-react": "^4.5.0",
-    "concurrently": "^10.0.6",
-    "tailwindcss": "^4.1.7",
-    "vite": "^6.3.5"
+    "concurrently": "^10.0.6"
   }
 }
